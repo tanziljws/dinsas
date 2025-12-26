@@ -29,7 +29,9 @@ class DatabaseSeeder extends Seeder
 
         // Seed guru data
         $this->call([
-            GuruSeeder::class,
+                // GuruSeeder::class,
+            RealGuruSeeder::class,
+            GuruUserSeeder::class,
         ]);
     }
 }
