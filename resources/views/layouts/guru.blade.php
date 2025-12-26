@@ -65,7 +65,7 @@
 
             <!-- Logo Area -->
             <div class="flex items-center gap-3 px-6 h-16 border-b border-gray-200">
-                <img src="{{ asset('images/logo-smkn4.jpeg') }}" alt="Logo" class="h-8 w-auto">
+                <img src="{{ asset('images/logo-smkn4.png') }}" alt="Logo" class="h-8 w-auto">
                 <span class="font-bold text-lg text-brand-900 leading-tight">SMKN 4 Bogor</span>
             </div>
 

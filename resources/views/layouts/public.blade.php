@@ -96,7 +96,7 @@
             <div class="flex justify-between items-center h-20">
                 <div class="flex-shrink-0 flex items-center gap-3">
                     <!-- Logo Placeholder/Image -->
-                    <img class="h-12 w-auto" src="{{ asset('images/logo-smkn4.jpeg') }}" alt="SMKN 4 Bogor Logo">
+                    <img class="h-12 w-auto" src="{{ asset('images/logo-smkn4.png') }}" alt="SMKN 4 Bogor Logo">
                     <div>
                         <h1 class="text-xl font-bold text-gray-900 leading-none tracking-tight">SMK NEGERI 4 BOGOR</h1>
                         <p class="text-xs text-brand-600 font-medium tracking-wide mt-0.5">FORM PERJALANAN DINAS</p>
