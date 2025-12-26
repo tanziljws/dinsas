@@ -17,11 +17,15 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Administrator',
-            'email' => 'admin@smkn4bogor.local',
-            'role' => 'admin',
-        ]);
+        if (!User::where('email', 'admin@smkn4bogor.local')->exists()) {
+            User::create([
+                'name' => 'Administrator',
+                'email' => 'admin@smkn4bogor.local',
+                'password' => bcrypt('password'), // Ensure password is set
+                'role' => 'admin',
+                'email_verified_at' => now(),
+            ]);
+        }
 
         // Seed guru data
         $this->call([
