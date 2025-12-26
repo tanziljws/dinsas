@@ -1,0 +1,379 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\PerjalananDinasResource\Pages;
+use App\Models\PerjalananDinas;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Illuminate\Support\Facades\Storage;
+
+class PerjalananDinasResource extends Resource
+{
+    protected static ?string $model = PerjalananDinas::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+
+    protected static ?string $navigationLabel = 'Laporan Perjalanan Dinas';
+
+    protected static ?string $modelLabel = 'Perjalanan Dinas';
+
+    protected static ?string $pluralModelLabel = 'Laporan Perjalanan Dinas';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationGroup = 'Laporan';
+
+    protected static bool $shouldRegisterNavigation = false;
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\Section::make('Data Guru')
+                    ->schema([
+                        Forms\Components\Select::make('guru_id')
+                            ->label('Nama Guru')
+                            ->relationship('guru', 'nama')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->disabled(),
+                    ]),
+
+                Forms\Components\Section::make('Data Pengikut')
+                    ->description('Nama pengikut perjalanan dinas (opsional)')
+                    ->schema([
+                        Forms\Components\TextInput::make('nama_pengikut1')
+                            ->label('Nama Pengikut 1')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('nama_pengikut2')
+                            ->label('Nama Pengikut 2')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('nama_pengikut3')
+                            ->label('Nama Pengikut 3')
+                            ->maxLength(255),
+                    ])
+                    ->columns(3)
+                    ->collapsible(),
+
+                Forms\Components\Section::make('Data Surat & Perjalanan')
+                    ->schema([
+                        Forms\Components\TextInput::make('nomor_surat')
+                            ->label('Nomor Surat')
+                            ->required()
+                            ->maxLength(100),
+                        Forms\Components\DatePicker::make('tanggal_surat')
+                            ->label('Tanggal Surat')
+                            ->required()
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                        Forms\Components\DatePicker::make('tanggal_berangkat')
+                            ->label('Tanggal Berangkat')
+                            ->required()
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                        Forms\Components\Select::make('jenis')
+                            ->label('Jenis Perjalanan Dinas')
+                            ->options([
+                                'Dalam Kota' => 'Dalam Kota',
+                                'Luar Kota' => 'Luar Kota',
+                            ])
+                            ->required()
+                            ->native(false),
+                        Forms\Components\TextInput::make('lama')
+                            ->label('Lama Perjalanan')
+                            ->required()
+                            ->placeholder('Contoh: 3 hari')
+                            ->maxLength(50),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Data Kegiatan')
+                    ->schema([
+                        Forms\Components\Textarea::make('nama_kegiatan')
+                            ->label('Nama Kegiatan')
+                            ->required()
+                            ->rows(3)
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('nama_instansi')
+                            ->label('Nama Instansi/Tempat Kegiatan')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('alamat_instansi')
+                            ->label('Alamat Instansi/Tempat Kegiatan')
+                            ->required()
+                            ->rows(2)
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('File Dokumen')
+                    ->schema([
+                        Forms\Components\FileUpload::make('file_path')
+                            ->label('File PDF')
+                            ->disk('public')
+                            ->directory('uploads')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(10240)
+                            ->downloadable()
+                            ->openable()
+                            ->previewable(false)
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Status')
+                    ->schema([
+                        Forms\Components\Select::make('status')
+                            ->label('Status Verifikasi')
+                            ->options([
+                                'Belum Dicek' => 'Belum Dicek',
+                                'Sedang Diproses' => 'Sedang Diproses',
+                                'Disetujui' => 'Disetujui',
+                                'Ditolak' => 'Ditolak',
+                            ])
+                            ->required()
+                            ->native(false)
+                            ->default('Belum Dicek'),
+                    ]),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('No')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('guru.nama')
+                    ->label('Nama Guru')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+                Tables\Columns\TextColumn::make('guru.nomor')
+                    ->label('NIP')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Tanggal Submit')
+                    ->dateTime('d M Y H:i')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('nomor_surat')
+                    ->label('No. Surat')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('tanggal_berangkat')
+                    ->label('Tgl Berangkat')
+                    ->date('d M Y')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('jenis')
+                    ->label('Jenis')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Dalam Kota' => 'info',
+                        'Luar Kota' => 'warning',
+                        default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Terkirim' => 'warning',
+                        'Diproses' => 'info',
+                        'Ditolak' => 'danger',
+                        'Sudah Dibayar' => 'success',
+                        default => 'gray',
+                    })
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('file_path')
+                    ->label('File')
+                    ->formatStateUsing(fn($state) => $state ? 'PDF' : '-')
+                    ->url(fn($record) => $record->file_path ? Storage::url($record->file_path) : null)
+                    ->openUrlInNewTab()
+                    ->badge()
+                    ->color('success')
+                    ->icon('heroicon-o-document-arrow-down'),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'Terkirim' => 'Terkirim',
+                        'Diproses' => 'Diproses',
+                        'Ditolak' => 'Ditolak',
+                        'Sudah Dibayar' => 'Sudah Dibayar',
+                    ]),
+                Tables\Filters\SelectFilter::make('jenis')
+                    ->label('Jenis Perjalanan')
+                    ->options([
+                        'Dalam Kota' => 'Dalam Kota',
+                        'Luar Kota' => 'Luar Kota',
+                    ]),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('set_diproses')
+                        ->label('Diproses')
+                        ->icon('heroicon-o-clock')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Ubah Status ke Diproses')
+                        ->modalDescription('Apakah Anda yakin ingin mengubah status menjadi Diproses?')
+                        ->action(fn($record) => $record->update(['status' => 'Diproses']))
+                        ->visible(fn($record) => $record->status === 'Terkirim'),
+                    Tables\Actions\Action::make('set_ditolak')
+                        ->label('Ditolak')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->modalHeading('Tolak Pengajuan')
+                        ->modalDescription('Masukkan alasan penolakan untuk pengajuan ini.')
+                        ->form([
+                            Forms\Components\Textarea::make('alasan_ditolak')
+                                ->label('Alasan Penolakan')
+                                ->required()
+                                ->maxLength(500)
+                                ->placeholder('Contoh: Dokumen tidak lengkap, format salah, dll.'),
+                        ])
+                        ->action(function ($record, array $data) {
+                            $record->update([
+                                'status' => 'Ditolak',
+                                'alasan_ditolak' => $data['alasan_ditolak'],
+                            ]);
+                        })
+                        ->visible(fn($record) => !in_array($record->status, ['Ditolak', 'Sudah Dibayar'])),
+                    Tables\Actions\Action::make('set_sudah_dibayar')
+                        ->label('Sudah Dibayar')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Ubah Status ke Sudah Dibayar')
+                        ->modalDescription('Apakah Anda yakin pengajuan ini sudah dibayar?')
+                        ->action(fn($record) => $record->update(['status' => 'Sudah Dibayar']))
+                        ->visible(fn($record) => $record->status === 'Diproses'),
+                ])->label('Ubah Status')
+                    ->icon('heroicon-o-chevron-down')
+                    ->color('gray')
+                    ->button(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ])
+            ->emptyStateHeading('Belum ada laporan perjalanan dinas')
+            ->emptyStateDescription('Laporan akan muncul setelah guru mengisi form.');
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Data Guru')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('guru.nama')
+                            ->label('Nama Pegawai'),
+                        Infolists\Components\TextEntry::make('guru.nomor')
+                            ->label('NIP'),
+                    ])
+                    ->columns(2),
+
+                Infolists\Components\Section::make('Data Pengikut')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('nama_pengikut1')
+                            ->label('Pengikut 1')
+                            ->default('-'),
+                        Infolists\Components\TextEntry::make('nama_pengikut2')
+                            ->label('Pengikut 2')
+                            ->default('-'),
+                        Infolists\Components\TextEntry::make('nama_pengikut3')
+                            ->label('Pengikut 3')
+                            ->default('-'),
+                    ])
+                    ->columns(3),
+
+                Infolists\Components\Section::make('Data Surat & Perjalanan')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('nomor_surat')
+                            ->label('Nomor Surat'),
+                        Infolists\Components\TextEntry::make('tanggal_surat')
+                            ->label('Tanggal Surat')
+                            ->date('d M Y'),
+                        Infolists\Components\TextEntry::make('tanggal_berangkat')
+                            ->label('Tanggal Berangkat')
+                            ->date('d M Y'),
+                        Infolists\Components\TextEntry::make('jenis')
+                            ->label('Jenis Perjalanan')
+                            ->badge()
+                            ->color(fn(string $state): string => match ($state) {
+                                'Dalam Kota' => 'info',
+                                'Luar Kota' => 'warning',
+                                default => 'gray',
+                            }),
+                        Infolists\Components\TextEntry::make('lama')
+                            ->label('Lama Perjalanan'),
+                    ])
+                    ->columns(3),
+
+                Infolists\Components\Section::make('Data Kegiatan')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('nama_kegiatan')
+                            ->label('Nama Kegiatan')
+                            ->columnSpanFull(),
+                        Infolists\Components\TextEntry::make('nama_instansi')
+                            ->label('Nama Instansi'),
+                        Infolists\Components\TextEntry::make('alamat_instansi')
+                            ->label('Alamat Instansi')
+                            ->columnSpanFull(),
+                    ]),
+
+                Infolists\Components\Section::make('Status & File')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('status')
+                            ->label('Status')
+                            ->badge()
+                            ->color(fn(string $state): string => match ($state) {
+                                'Terkirim' => 'warning',
+                                'Diproses' => 'info',
+                                'Sudah Dibayar' => 'success',
+                                'Ditolak' => 'danger',
+                                default => 'gray',
+                            }),
+                        Infolists\Components\TextEntry::make('file_path')
+                            ->label('File Dokumen')
+                            ->formatStateUsing(fn($state) => $state ? 'Download PDF' : 'Tidak ada file')
+                            ->url(fn($record) => $record->file_path ? Storage::url($record->file_path) : null)
+                            ->openUrlInNewTab(),
+                        Infolists\Components\TextEntry::make('created_at')
+                            ->label('Tanggal Submit')
+                            ->dateTime('d M Y H:i'),
+                    ])
+                    ->columns(3),
+            ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListPerjalananDinas::route('/'),
+            'create' => Pages\CreatePerjalananDinas::route('/create'),
+            'view' => Pages\ViewPerjalananDinas::route('/{record}'),
+            'edit' => Pages\EditPerjalananDinas::route('/{record}/edit'),
+        ];
+    }
+}
