@@ -25,8 +25,20 @@ class GuruSeeder extends Seeder
             ['nama' => 'Joko Widodo, S.Pd.', 'nomor' => '198206152006011010'],
         ];
 
-        foreach ($gurus as $guru) {
-            Guru::create($guru);
+        foreach ($gurus as $guruData) {
+            // Create Guru
+            $guru = Guru::create($guruData);
+
+            // Create User for this Guru
+            $user = \App\Models\User::create([
+                'name' => $guru->nama,
+                'email' => $guru->nomor . '@smkn4bogor.local', // Email dummy based on NIP
+                'password' => bcrypt($guru->nomor), // Default password is NIP
+                'role' => 'guru',
+            ]);
+
+            // Link Guru to User
+            $guru->update(['user_id' => $user->id]);
         }
     }
 }
