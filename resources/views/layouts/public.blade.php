@@ -9,8 +9,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,7 +18,7 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
                     },
                     colors: {
                         brand: {
@@ -91,34 +90,47 @@
 <body class="font-sans antialiased text-gray-800">
 
     <!-- Navbar -->
-    <nav class="glass-nav fixed w-full z-50 top-0 left-0 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200 fixed w-full z-50 top-0 left-0 shadow-sm">
+        <div class="w-full px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-14">
+                <!-- Branding -->
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    <!-- Logo Placeholder/Image -->
-                    <img class="h-12 w-auto" src="{{ asset('images/logo-smkn4.png') }}" alt="SMKN 4 Bogor Logo">
-                    <div>
-                        <h1 class="text-xl font-bold text-gray-900 leading-none tracking-tight">SMK NEGERI 4 BOGOR</h1>
-                        <p class="text-xs text-brand-600 font-medium tracking-wide mt-0.5">FORM PERJALANAN DINAS</p>
-                    </div>
+                    <img class="h-8 w-auto" src="{{ asset('images/logo-smkn4.png') }}" alt="SMKN 4 Bogor Logo">
+                    <span class="text-xl font-semibold text-gray-800 tracking-tight">SMKN 4 Bogor</span>
                 </div>
+
+                <!-- Navigation Links -->
                 <div class="hidden md:flex items-center space-x-8">
+                    <!-- Beranda (Active State) -->
                     <a href="#"
-                        class="text-gray-500 hover:text-brand-600 font-medium transition-colors text-sm">Beranda</a>
-                    <a href="https://smkn4bogor.sch.id" target="_blank"
-                        class="text-gray-500 hover:text-brand-600 font-medium transition-colors text-sm">Website
-                        Resmi</a>
-                    <a href="/admin"
-                        class="px-5 py-2.5 rounded-full bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                        Admin Login
+                        class="flex items-center gap-2 text-brand-600 font-medium text-sm h-14 border-b-2 border-brand-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        <span>Beranda</span>
                     </a>
+
+                    <!-- Website Resmi -->
+                    <a href="https://smkn4bogor.sch.id" target="_blank"
+                        class="flex items-center gap-2 text-gray-500 hover:text-brand-600 font-medium text-sm h-14 border-b-2 border-transparent hover:border-brand-600 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                        <span>Website Resmi</span>
+                    </a>
+
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content Wrapper -->
-    <div class="pt-20 min-h-screen flex flex-col">
+    <div class="pt-14 min-h-screen flex flex-col">
         <!-- Decoration Background (Top Half) -->
         <div class="hero-section absolute top-0 left-0 w-full h-[400px] z-0">
             <div class="absolute inset-0 hero-pattern"></div>
@@ -133,10 +145,10 @@
         </div>
 
         <!-- Footer -->
-        <footer class="bg-white border-t border-gray-100 mt-auto py-8 relative z-10">
+        <footer class="mt-auto py-6 relative z-10">
             <div class="max-w-7xl mx-auto px-4 text-center">
-                <p class="text-gray-500 text-sm">© {{ date('Y') }} SMK Negeri 4 Bogor. All rights reserved.</p>
-                <p class="text-gray-400 text-xs mt-2">Pusat Informasi Digital SMKN 4 Bogor</p>
+                <p class="text-gray-400 text-xs">© {{ date('Y') }} SMK Negeri 4 Bogor. All rights reserved. &bull; Pusat
+                    Informasi Digital SMKN 4 Bogor</p>
             </div>
         </footer>
     </div>
