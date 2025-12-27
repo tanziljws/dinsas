@@ -47,19 +47,13 @@ class PerjalananDinasResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Data Pengikut')
-                    ->description('Nama pengikut perjalanan dinas (opsional)')
+                    ->description('Daftar pengikut perjalanan dinas')
                     ->schema([
-                        Forms\Components\TextInput::make('nama_pengikut1')
-                            ->label('Nama Pengikut 1')
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('nama_pengikut2')
-                            ->label('Nama Pengikut 2')
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('nama_pengikut3')
-                            ->label('Nama Pengikut 3')
-                            ->maxLength(255),
+                        Forms\Components\TagsInput::make('pengikut')
+                            ->label('Nama Pengikut')
+                            ->placeholder('Tambah nama pengikut')
+                            ->columnSpanFull(),
                     ])
-                    ->columns(3)
                     ->collapsible(),
 
                 Forms\Components\Section::make('Data Surat & Perjalanan')
@@ -151,20 +145,20 @@ class PerjalananDinasResource extends Resource
                     ->label('No')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('guru.nama')
-                    ->label('Nama Guru')
+                    ->label('Nama Pegawai')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
-                Tables\Columns\TextColumn::make('guru.nomor')
-                    ->label('NIP')
-                    ->searchable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Tanggal Submit')
-                    ->dateTime('d M Y H:i')
-                    ->sortable(),
+                    ->weight('bold')
+                    ->description(fn(PerjalananDinas $record): string => $record->guru->nomor ?? '-'),
                 Tables\Columns\TextColumn::make('nomor_surat')
-                    ->label('No. Surat')
+                    ->label('No. Surat & Tgl')
+                    ->searchable()
+                    ->toggleable()
+                    ->description(fn(PerjalananDinas $record): string => $record->created_at->format('d M Y H:i')),
+                Tables\Columns\TextColumn::make('pengikut')
+                    ->label('Pengikut')
+                    ->listWithLineBreaks()
+                    ->bulleted()
                     ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('tanggal_berangkat')
@@ -190,7 +184,8 @@ class PerjalananDinasResource extends Resource
                         'Sudah Dibayar' => 'success',
                         default => 'gray',
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->hidden(fn() => !request()->query('filter_jenis')),
                 Tables\Columns\TextColumn::make('file_path')
                     ->label('File')
                     ->formatStateUsing(fn($state) => $state ? 'PDF' : '-')
@@ -289,17 +284,31 @@ class PerjalananDinasResource extends Resource
 
                 Infolists\Components\Section::make('Data Pengikut')
                     ->schema([
-                        Infolists\Components\TextEntry::make('nama_pengikut1')
-                            ->label('Pengikut 1')
-                            ->default('-'),
-                        Infolists\Components\TextEntry::make('nama_pengikut2')
-                            ->label('Pengikut 2')
-                            ->default('-'),
-                        Infolists\Components\TextEntry::make('nama_pengikut3')
-                            ->label('Pengikut 3')
-                            ->default('-'),
-                    ])
-                    ->columns(3),
+                        Infolists\Components\TextEntry::make('pengikut')
+                            ->label('Daftar Pengikut')
+                            ->html()
+                            ->formatStateUsing(function ($state) {
+                                if (empty($state))
+                                    return '<span class="text-gray-400 italic">Tidak ada pengikut</span>';
+
+                                // $state is array of names
+                                // Fetch NIPs for these names
+                                $nips = \App\Models\Guru::whereIn('nama', $state)->pluck('nomor', 'nama');
+
+                                $html = '<div class="flex flex-col gap-3">';
+                                foreach ($state as $nama) {
+                                    $nip = $nips[$nama] ?? '-';
+                                    $html .= "
+                                        <div class='flex flex-col border-b border-gray-100 last:border-0 pb-2 last:pb-0'>
+                                            <span class='font-medium text-gray-900'>{$nama}</span>
+                                            <span class='text-xs text-gray-500'>NIP. {$nip}</span>
+                                        </div>";
+                                }
+                                $html .= '</div>';
+                                return $html;
+                            })
+                            ->columnSpanFull(),
+                    ]),
 
                 Infolists\Components\Section::make('Data Surat & Perjalanan')
                     ->schema([

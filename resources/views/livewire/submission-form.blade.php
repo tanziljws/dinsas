@@ -43,8 +43,6 @@
                 </div>
 
                 <div class="pt-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-4">Pengikut (Opsional)</label>
-
                     <div class="space-y-4">
                         @foreach($pengikut as $index => $p)
                             <div class="flex gap-3 items-center">
@@ -79,7 +77,7 @@
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            Tambah Pengikut
+                            Tambah Personil Pengikut
                         </button>
                     @endif
                 </div>
