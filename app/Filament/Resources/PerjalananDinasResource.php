@@ -168,7 +168,7 @@ class PerjalananDinasResource extends Resource
                         }
                         return $html;
                     })
-                    ->description(fn(PerjalananDinas $record): string => $record->guru->nomor ?? '-'),
+                    }),
                 Tables\Columns\TextColumn::make('tanggal_berangkat')
                     ->label('Tgl Berangkat')
                     ->date('d M Y')
