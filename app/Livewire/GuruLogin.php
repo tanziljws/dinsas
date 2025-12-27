@@ -78,7 +78,7 @@ class GuruLogin extends Component
             $this->logActivity($user, $email, 'success');
 
             session()->regenerate();
-            return redirect()->intended(route('guru.dashboard'));
+            return redirect()->route('guru.dashboard');
         }
 
         // Failed login

@@ -19,12 +19,78 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <form wire:submit.prevent="submit" class="p-8 space-y-10">
 
-            <!-- SECTION 1: Detail Surat & Perjalanan -->
+            <!-- SECTION 1: Informasi Personil -->
             <div class="space-y-6">
                 <div class="border-b border-gray-100 pb-3">
                     <h2 class="text-lg font-bold text-gray-900 flex items-center">
                         <span
                             class="flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 text-brand-600 text-sm font-bold mr-3">1</span>
+                        Informasi Personil
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap</label>
+                        <input type="text" value="{{ $guru->nama }}" readonly
+                            class="w-full px-4 py-3 rounded-lg border-gray-200 bg-gray-100 text-gray-600 focus:ring-0 cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">NIP / Nomor Identitas</label>
+                        <input type="text" value="{{ $guru->nomor }}" readonly
+                            class="w-full px-4 py-3 rounded-lg border-gray-200 bg-gray-100 text-gray-600 focus:ring-0 cursor-not-allowed">
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-4">Pengikut (Opsional)</label>
+
+                    <div class="space-y-4">
+                        @foreach($pengikut as $index => $p)
+                            <div class="flex gap-3 items-center">
+                                <span
+                                    class="flex-none flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-500 text-xs font-bold">{{ $index + 2 }}</span>
+                                <div class="flex-1">
+                                    <select wire:model="pengikut.{{ $index }}"
+                                        class="w-full px-4 py-3 rounded-lg border-gray-200 bg-white border focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all text-sm">
+                                        <option value="">-- Pilih Pegawai --</option>
+                                        @foreach($gurus as $g)
+                                            @if($g->id !== $guru->id)
+                                                <option value="{{ $g->nama }}">{{ $g->nama }}</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <button type="button" wire:click="removePengikut({{ $index }})"
+                                    class="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                    title="Hapus">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    @if(count($pengikut) < 3)
+                        <button type="button" wire:click="addPengikut"
+                            class="mt-4 inline-flex items-center px-4 py-2 text-sm font-medium text-brand-600 bg-white border border-brand-200 rounded-lg hover:bg-brand-50 transition-colors shadow-sm">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Tambah Pengikut
+                        </button>
+                    @endif
+                </div>
+            </div>
+
+            <!-- SECTION 2: Detail Surat & Perjalanan -->
+            <div class="space-y-6">
+                <div class="border-b border-gray-100 pb-3">
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center">
+                        <span
+                            class="flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 text-brand-600 text-sm font-bold mr-3">2</span>
                         Detail Surat & Perjalanan
                     </h2>
                 </div>
@@ -90,12 +156,12 @@
                 </div>
             </div>
 
-            <!-- SECTION 2: Kegiatan & Instansi -->
+            <!-- SECTION 3: Kegiatan & Instansi -->
             <div class="space-y-6">
                 <div class="border-b border-gray-100 pb-3">
                     <h2 class="text-lg font-bold text-gray-900 flex items-center">
                         <span
-                            class="flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 text-brand-600 text-sm font-bold mr-3">2</span>
+                            class="flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 text-brand-600 text-sm font-bold mr-3">3</span>
                         Kegiatan & Instansi
                     </h2>
                 </div>
@@ -126,54 +192,14 @@
                         placeholder="Alamat lengkap instansi..."></textarea>
                     @error('alamat_instansi') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                 </div>
-
-                <div class="pt-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-4">Pengikut (Opsional)</label>
-
-                    <div class="space-y-4">
-                        @foreach($pengikut as $index => $p)
-                            <div class="flex gap-3 items-center">
-                                <div class="flex-1">
-                                    <select wire:model="pengikut.{{ $index }}"
-                                        class="w-full px-4 py-3 rounded-lg border-gray-200 bg-white border focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all text-sm">
-                                        <option value="">-- Pilih Pegawai --</option>
-                                        @foreach($gurus as $g)
-                                            @if($g->id !== $guru->id)
-                                                <option value="{{ $g->nama }}">{{ $g->nama }}</option>
-                                            @endif
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <button type="button" wire:click="removePengikut({{ $index }})"
-                                    class="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
-                                    title="Hapus">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    @if(count($pengikut) < 3)
-                        <button type="button" wire:click="addPengikut"
-                            class="mt-4 inline-flex items-center px-4 py-2 text-sm font-medium text-brand-600 bg-white border border-brand-200 rounded-lg hover:bg-brand-50 transition-colors shadow-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Tambah Pengikut
-                        </button>
-                    @endif
-                </div>
             </div>
 
-            <!-- SECTION 3: Upload Dokumen -->
+            <!-- SECTION 4: Upload Dokumen -->
             <div class="space-y-6">
                 <div class="border-b border-gray-100 pb-3">
                     <h2 class="text-lg font-bold text-gray-900 flex items-center">
                         <span
-                            class="flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 text-brand-600 text-sm font-bold mr-3">3</span>
+                            class="flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 text-brand-600 text-sm font-bold mr-3">4</span>
                         Upload Dokumen
                     </h2>
                 </div>
