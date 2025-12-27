@@ -74,7 +74,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigationItems([
-                \Filament\Navigation\NavigationItem::make('Perjadin')
+                \Filament\Navigation\NavigationItem::make('Rekap Perjadin')
                     ->url(fn() => \App\Filament\Resources\PerjalananDinasResource::getUrl('index'))
                     ->icon('heroicon-o-inbox')
                     ->group('Laporan')

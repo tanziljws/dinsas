@@ -144,27 +144,43 @@ class PerjalananDinasResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('No')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('guru.nama')
-                    ->label('Nama Pegawai')
-                    ->searchable()
-                    ->sortable()
-                    ->weight('bold')
-                    ->description(fn(PerjalananDinas $record): string => $record->guru->nomor ?? '-'),
                 Tables\Columns\TextColumn::make('nomor_surat')
                     ->label('No. Surat & Tgl')
                     ->searchable()
                     ->toggleable()
                     ->description(fn(PerjalananDinas $record): string => $record->created_at->format('d M Y H:i')),
-                Tables\Columns\TextColumn::make('pengikut')
-                    ->label('Pengikut')
-                    ->listWithLineBreaks()
-                    ->bulleted()
+                Tables\Columns\TextColumn::make('guru.nama')
+                    ->label('Personil')
                     ->searchable()
-                    ->toggleable(),
+                    ->sortable()
+                    ->weight('bold')
+                    ->html()
+                    ->formatStateUsing(function ($state, PerjalananDinas $record) {
+                        $html = "<div>{$state}</div>";
+                        if (!empty($record->pengikut) && is_array($record->pengikut)) {
+                            $html .= '<ul class="mt-1 pl-0 list-none space-y-1">';
+                            foreach ($record->pengikut as $pengikut) {
+                                if (is_string($pengikut)) {
+                                    $html .= "<li class='text-sm text-gray-500'>- {$pengikut}</li>";
+                                }
+                            }
+                            $html .= '</ul>';
+                        }
+                        return $html;
+                    })
+                    ->description(fn(PerjalananDinas $record): string => $record->guru->nomor ?? '-'),
                 Tables\Columns\TextColumn::make('tanggal_berangkat')
                     ->label('Tgl Berangkat')
                     ->date('d M Y')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('nama_kegiatan')
+                    ->label('Kegiatan')
+                    ->limit(30)
+                    ->tooltip(fn(PerjalananDinas $record): string => $record->nama_kegiatan ?? '')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('nama_instansi')
+                    ->label('Nama Instansi')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('jenis')
                     ->label('Jenis')
                     ->badge()
@@ -174,26 +190,6 @@ class PerjalananDinasResource extends Resource
                         default => 'gray',
                     })
                     ->hidden(fn() => request()->query('filter_jenis')),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Terkirim' => 'warning',
-                        'Diproses' => 'info',
-                        'Ditolak' => 'danger',
-                        'Sudah Dibayar' => 'success',
-                        default => 'gray',
-                    })
-                    ->sortable()
-                    ->hidden(fn() => !request()->query('filter_jenis')),
-                Tables\Columns\TextColumn::make('file_path')
-                    ->label('File')
-                    ->formatStateUsing(fn($state) => $state ? 'PDF' : '-')
-                    ->url(fn($record) => $record->file_path ? Storage::url($record->file_path) : null)
-                    ->openUrlInNewTab()
-                    ->badge()
-                    ->color('success')
-                    ->icon('heroicon-o-document-arrow-down'),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
@@ -254,10 +250,11 @@ class PerjalananDinasResource extends Resource
                         ->modalDescription('Apakah Anda yakin pengajuan ini sudah dibayar?')
                         ->action(fn($record) => $record->update(['status' => 'Sudah Dibayar']))
                         ->visible(fn($record) => $record->status === 'Diproses'),
-                ])->label('Ubah Status')
-                    ->icon('heroicon-o-chevron-down')
+                ])->label('Aksi')
+                    ->icon('heroicon-m-ellipsis-vertical')
                     ->color('gray')
-                    ->button(),
+                    ->size('sm')
+                    ->dropdown(true),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
@@ -291,12 +288,18 @@ class PerjalananDinasResource extends Resource
                                 if (empty($state))
                                     return '<span class="text-gray-400 italic">Tidak ada pengikut</span>';
 
-                                // $state is array of names
+                                // Ensure state is an array
+                                if (!is_array($state)) {
+                                    $state = is_string($state) ? [$state] : (array) $state;
+                                }
+
                                 // Fetch NIPs for these names
                                 $nips = \App\Models\Guru::whereIn('nama', $state)->pluck('nomor', 'nama');
 
                                 $html = '<div class="flex flex-col gap-3">';
                                 foreach ($state as $nama) {
+                                    if (!is_string($nama))
+                                        continue;
                                     $nip = $nips[$nama] ?? '-';
                                     $html .= "
                                         <div class='flex flex-col border-b border-gray-100 last:border-0 pb-2 last:pb-0'>
