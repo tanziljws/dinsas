@@ -178,7 +178,8 @@ class PerjalananDinasResource extends Resource
                         'Dalam Kota' => 'info',
                         'Luar Kota' => 'warning',
                         default => 'gray',
-                    }),
+                    })
+                    ->hidden(fn() => request()->query('filter_jenis')),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()

@@ -27,10 +27,10 @@ class ListPerjalananDinas extends ListRecords
 
         if ($jenis = request()->query('filter_jenis')) {
             $query->where('jenis', $jenis)
-                ->where('status', '!=', 'Belum Dicek');
+                ->whereNotIn('status', ['Belum Dicek', 'Terkirim']);
         } else {
-            // Default "Perjadin" tab matches Inbox logic: only show "Belum Dicek"
-            $query->where('status', 'Belum Dicek');
+            // Default "Perjadin" tab matches Inbox logic: only show "Belum Dicek" or "Terkirim"
+            $query->whereIn('status', ['Belum Dicek', 'Terkirim']);
         }
 
         return $query;
