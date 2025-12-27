@@ -27,6 +27,8 @@ class PerjalananDinas extends Model
         'tanggal_berangkat',
         'jenis',
         'lama',
+        'nominal',
+        'kategori',
         'nama_kegiatan',
         'nama_instansi',
         'alamat_instansi',

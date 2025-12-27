@@ -141,14 +141,7 @@ class PerjalananDinasResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('No')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('nomor_surat')
-                    ->label('No. Surat & Tgl')
-                    ->searchable()
-                    ->toggleable()
-                    ->description(fn(PerjalananDinas $record): string => $record->created_at->format('d M Y H:i')),
+                // Personil column (always visible)
                 Tables\Columns\TextColumn::make('guru.nama')
                     ->label('Personil')
                     ->searchable()
@@ -169,18 +162,51 @@ class PerjalananDinasResource extends Resource
                         return $html;
                     }),
 
+                // Nama Instansi (always visible)
+                Tables\Columns\TextColumn::make('nama_instansi')
+                    ->label('Nama Instansi')
+                    ->searchable(),
+
+                // --- CATEGORY TABS ONLY (Dalam/Luar Kota) ---
+                Tables\Columns\TextColumn::make('lama')
+                    ->label('Hari')
+                    ->hidden(fn() => !request()->query('filter_jenis')),
+                Tables\Columns\TextColumn::make('nominal')
+                    ->label('Nominal')
+                    ->money('IDR')
+                    ->hidden(fn() => !request()->query('filter_jenis')),
+                Tables\Columns\TextColumn::make('jumlah')
+                    ->label('Jumlah')
+                    ->money('IDR')
+                    ->getStateUsing(function (PerjalananDinas $record) {
+                        $hari = (int) preg_replace('/[^0-9]/', '', $record->lama ?? '0');
+                        return $hari * ($record->nominal ?? 0);
+                    })
+                    ->hidden(fn() => !request()->query('filter_jenis')),
+                Tables\Columns\TextColumn::make('kategori')
+                    ->label('Kategori')
+                    ->badge()
+                    ->color('gray')
+                    ->hidden(fn() => !request()->query('filter_jenis')),
+
+                // --- REKAP TAB ONLY ---
+                Tables\Columns\TextColumn::make('nomor_surat')
+                    ->label('No. Surat & Tgl')
+                    ->searchable()
+                    ->toggleable()
+                    ->description(fn(PerjalananDinas $record): string => $record->created_at->format('d M Y H:i'))
+                    ->hidden(fn() => request()->query('filter_jenis')),
                 Tables\Columns\TextColumn::make('tanggal_berangkat')
                     ->label('Tgl Berangkat')
                     ->date('d M Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->hidden(fn() => request()->query('filter_jenis')),
                 Tables\Columns\TextColumn::make('nama_kegiatan')
                     ->label('Kegiatan')
                     ->limit(30)
                     ->tooltip(fn(PerjalananDinas $record): string => $record->nama_kegiatan ?? '')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('nama_instansi')
-                    ->label('Nama Instansi')
-                    ->searchable(),
+                    ->searchable()
+                    ->hidden(fn() => request()->query('filter_jenis')),
                 Tables\Columns\TextColumn::make('jenis')
                     ->label('Jenis')
                     ->badge()
@@ -210,7 +236,41 @@ class PerjalananDinasResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->hidden(fn() => request()->query('filter_jenis')),
+                Tables\Actions\Action::make('edit_nominal')
+                    ->label('Input Nominal')
+                    ->icon('heroicon-o-currency-dollar')
+                    ->color('warning')
+                    ->modalHeading('Input Nominal & Kategori')
+                    ->form([
+                        Forms\Components\TextInput::make('nominal')
+                            ->label('Nominal per Hari')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->required(),
+                        Forms\Components\Select::make('kategori')
+                            ->label('Kategori')
+                            ->options([
+                                'Umum' => 'Umum',
+                                'PKL PPLG' => 'PKL PPLG',
+                                'PKL TKJ' => 'PKL TKJ',
+                                'PKL TP' => 'PKL TP',
+                                'PKL TO' => 'PKL TO',
+                            ])
+                            ->required(),
+                    ])
+                    ->fillForm(fn($record) => [
+                        'nominal' => $record->nominal,
+                        'kategori' => $record->kategori,
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'nominal' => $data['nominal'],
+                            'kategori' => $data['kategori'],
+                        ]);
+                    })
+                    ->visible(fn() => request()->query('filter_jenis')),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('set_diproses')
                         ->label('Diproses')
@@ -221,26 +281,6 @@ class PerjalananDinasResource extends Resource
                         ->modalDescription('Apakah Anda yakin ingin mengubah status menjadi Diproses?')
                         ->action(fn($record) => $record->update(['status' => 'Diproses']))
                         ->visible(fn($record) => $record->status === 'Terkirim'),
-                    Tables\Actions\Action::make('set_ditolak')
-                        ->label('Ditolak')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->modalHeading('Tolak Pengajuan')
-                        ->modalDescription('Masukkan alasan penolakan untuk pengajuan ini.')
-                        ->form([
-                            Forms\Components\Textarea::make('alasan_ditolak')
-                                ->label('Alasan Penolakan')
-                                ->required()
-                                ->maxLength(500)
-                                ->placeholder('Contoh: Dokumen tidak lengkap, format salah, dll.'),
-                        ])
-                        ->action(function ($record, array $data) {
-                            $record->update([
-                                'status' => 'Ditolak',
-                                'alasan_ditolak' => $data['alasan_ditolak'],
-                            ]);
-                        })
-                        ->visible(fn($record) => !in_array($record->status, ['Ditolak', 'Sudah Dibayar'])),
                     Tables\Actions\Action::make('set_sudah_dibayar')
                         ->label('Sudah Dibayar')
                         ->icon('heroicon-o-check-circle')
@@ -255,7 +295,6 @@ class PerjalananDinasResource extends Resource
                     ->color('gray')
                     ->size('sm')
                     ->dropdown(true),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
