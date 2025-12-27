@@ -167,7 +167,7 @@ class PerjalananDinasResource extends Resource
                             $html .= '</ul>';
                         }
                         return $html;
-                    })
+                    }),
 
                 Tables\Columns\TextColumn::make('tanggal_berangkat')
                     ->label('Tgl Berangkat')
