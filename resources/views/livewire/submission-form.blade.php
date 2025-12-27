@@ -25,7 +25,7 @@
                     <h2 class="text-lg font-bold text-gray-900 flex items-center">
                         <span
                             class="flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 text-brand-600 text-sm font-bold mr-3">1</span>
-                        Informasi Personil
+                        Personil Pelaksana
                     </h2>
                 </div>
 
