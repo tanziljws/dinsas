@@ -78,6 +78,7 @@
                     <tr>
                         <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Tanggal</th>
                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">No. Surat</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Pengaju</th>
                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Kegiatan</th>
                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Jenis</th>
                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
@@ -90,6 +91,13 @@
                         <tr>
                             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">{{ $item->created_at->format('d/m/Y') }}</td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">{{ $item->nomor_surat }}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                @if($item->guru_id == $guru->id)
+                                    <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Saya</span>
+                                @else
+                                    <span class="font-medium text-gray-900">{{ $item->guru->nama }}</span>
+                                @endif
+                            </td>
                             <td class="px-3 py-4 text-sm text-gray-500">{{ Str::limit($item->nama_kegiatan, 50) }}</td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ $item->jenis }}</td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm">

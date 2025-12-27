@@ -107,11 +107,7 @@ class SubmissionForm extends Component
             $this->nama_instansi = $pengajuan->nama_instansi;
             $this->alamat_instansi = $pengajuan->alamat_instansi;
 
-            $this->pengikut = array_values(array_filter([
-                $pengajuan->nama_pengikut1,
-                $pengajuan->nama_pengikut2,
-                $pengajuan->nama_pengikut3
-            ]));
+            $this->pengikut = $pengajuan->pengikut ?? [];
         }
     }
 
@@ -133,7 +129,7 @@ class SubmissionForm extends Component
 
     public function addPengikut()
     {
-        if (count($this->pengikut) < 3) {
+        if (count($this->pengikut) < 10) {
             $this->pengikut[] = '';
         }
     }
@@ -150,9 +146,7 @@ class SubmissionForm extends Component
 
         $data = [
             'guru_id' => $this->guru->id,
-            'nama_pengikut1' => $this->pengikut[0] ?? null,
-            'nama_pengikut2' => $this->pengikut[1] ?? null,
-            'nama_pengikut3' => $this->pengikut[2] ?? null,
+            'pengikut' => array_values(array_filter($this->pengikut)),
             'nomor_surat' => $this->nomor_surat,
             'tanggal_surat' => $this->tanggal_surat,
             'tanggal_berangkat' => $this->tanggal_berangkat,

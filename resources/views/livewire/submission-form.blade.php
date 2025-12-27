@@ -56,7 +56,7 @@
                                         <option value="">-- Pilih Pegawai --</option>
                                         @foreach($gurus as $g)
                                             @if($g->id !== $guru->id)
-                                                <option value="{{ $g->nama }}">{{ $g->nama }}</option>
+                                                <option value="{{ $g->nama }}">{{ $g->nama }} - {{ $g->nomor }}</option>
                                             @endif
                                         @endforeach
                                     </select>
@@ -73,7 +73,7 @@
                         @endforeach
                     </div>
 
-                    @if(count($pengikut) < 3)
+                    @if(count($pengikut) < 10)
                         <button type="button" wire:click="addPengikut"
                             class="mt-4 inline-flex items-center px-4 py-2 text-sm font-medium text-brand-600 bg-white border border-brand-200 rounded-lg hover:bg-brand-50 transition-colors shadow-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

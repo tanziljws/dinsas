@@ -69,7 +69,10 @@ class GuruDashboard extends Component
             ])->layout('layouts.guru');
         }
 
-        $history = PerjalananDinas::where('guru_id', $guru->id)
+        $history = PerjalananDinas::where(function ($query) use ($guru) {
+            $query->where('guru_id', $guru->id)
+                ->orWhereJsonContains('pengikut', $guru->nama);
+        })
             ->orderBy('created_at', 'desc')
             ->get();
 

@@ -21,9 +21,7 @@ class PerjalananDinas extends Model
      */
     protected $fillable = [
         'guru_id',
-        'nama_pengikut1',
-        'nama_pengikut2',
-        'nama_pengikut3',
+        'pengikut',
         'nomor_surat',
         'tanggal_surat',
         'tanggal_berangkat',
@@ -45,6 +43,7 @@ class PerjalananDinas extends Model
     protected $casts = [
         'tanggal_surat' => 'date',
         'tanggal_berangkat' => 'date',
+        'pengikut' => 'array',
     ];
 
     /**

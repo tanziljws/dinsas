@@ -74,12 +74,20 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigationItems([
+                \Filament\Navigation\NavigationItem::make('Perjadin')
+                    ->url(fn() => \App\Filament\Resources\PerjalananDinasResource::getUrl('index'))
+                    ->icon('heroicon-o-inbox')
+                    ->group('Laporan')
+                    ->sort(0)
+                    ->isActiveWhen(fn() => request()->routeIs('filament.admin.resources.perjalanan-dinas.index') && !request()->query('filter_jenis')),
+
                 \Filament\Navigation\NavigationItem::make('Perjadin Dalam Kota')
                     ->url(fn() => \App\Filament\Resources\PerjalananDinasResource::getUrl('index', ['filter_jenis' => 'Dalam Kota']))
                     ->icon('heroicon-o-building-office-2')
                     ->group('Laporan')
                     ->isActiveWhen(fn() => request()->query('filter_jenis') === 'Dalam Kota')
                     ->sort(1),
+
                 \Filament\Navigation\NavigationItem::make('Perjadin Luar Kota')
                     ->url(fn() => \App\Filament\Resources\PerjalananDinasResource::getUrl('index', ['filter_jenis' => 'Luar Kota']))
                     ->icon('heroicon-o-map')
@@ -87,5 +95,12 @@ class AdminPanelProvider extends PanelProvider
                     ->isActiveWhen(fn() => request()->query('filter_jenis') === 'Luar Kota')
                     ->sort(2),
             ]);
+    }
+    public function boot(): void
+    {
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            'panels::auth.login.before',
+            fn(): \Illuminate\Contracts\View\View => view('filament.login-navbar'),
+        );
     }
 }
